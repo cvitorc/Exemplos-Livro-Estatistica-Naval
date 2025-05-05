@@ -1,63 +1,55 @@
-#frequencia absoluta (número de dados que caem dentro de cada faixa). A partir daí, obtém-se a frequencia relativa (proporção em relação ao total de dados) e a frequencia acumulada (soma progressiva das frequências). O ponto médio de cada intervalo é calculado para representar graficamente as classes de forma precisa.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-#O calculo do tamanho do intervalo de classe eh feito dividindo a diferença entre o valor máximo e o valor mínimo dos dados pelo número de classes. Isso resulta em intervalos de tamanho uniforme, garantindo uma distribuição equilibrada dos dados ao longo do histograma. Esse método facilita a visualizacao de tendencias e padroes. A função np.linspace é utilizada para criar os intervalos de classe de forma automática, garantindo que o espaço entre cada limite seja constante.
+# Lista de dados (exemplo: velocidades das embarcações)
+velocidades = [12, 13, 13, 14, 15, 15, 15, 16, 16, 17,
+               17, 18, 18, 18, 19, 19, 20, 20, 21, 22,
+               22, 22, 23, 23, 23, 24, 24, 24, 25, 26,
+               26, 26, 27, 27, 27, 28, 28, 29, 29, 30,
+               30, 31, 31, 31, 32, 32, 33, 34, 34, 35]
 
-# Passo 1: Determinar número de classes
-# O número de classes é calculado usando a raiz quadrada do total de elementos
-num_classes = int(np.sqrt(len(velocidades)))  # sqrt(50) ≈ 7
+# Número de classes: usa a raiz quadrada da quantidade de dados
+num_classes = int(np.sqrt(len(velocidades)))
 
-# Passo 2: Determinar intervalo de classe (faixas de valores)
-# np.linspace cria uma sequencia de valores igualmente espacados de min(velocidades) ate max(velocidades)
-# O +1 garante que tenhamos um ponto a mais para formar 7 intervalos
-intervalo_classes = np.linspace(min(velocidades), max(velocidades), num_classes + 1)
+# Cria os intervalos de classe igualmente espaçados
+intervalos = np.linspace(min(velocidades), max(velocidades), num_classes + 1)
 
-# Passo 3: Calcular frequencia absoluta
-# np.histogram retorna a contagem de elementos (frequencia absoluta) em cada intervalo de classe definido
-frequencia_absoluta, bins = np.histogram(velocidades, bins=intervalo_classes)
+# Calcula a frequência absoluta (quantos dados caem em cada intervalo)
+frequencia_abs, limites = np.histogram(velocidades, bins=intervalos)
 
-# Passo 4: Calcular frequencia relativa
-# A frequencia relativa eh obtida dividindo a frequencia absoluta pelo total de elementos
-frequencia_relativa = frequencia_absoluta / len(velocidades)
+# Frequência relativa: porcentagem dos dados em cada intervalo
+frequencia_rel = frequencia_abs / len(velocidades)
 
-# Passo 5: Calcular frequencia acumulada
-# np.cumsum retorna a soma cumulativa dos valores, criando a frequência acumulada
-frequencia_acumulada = np.cumsum(frequencia_absoluta)
+# Frequência acumulada: soma progressiva das frequências
+frequencia_acum = np.cumsum(frequencia_abs)
 
-# Passo 6: Calcular ponto medio de cada intervalo de classe
-# O ponto medio é a média dos limites superior e inferior de cada intervalo
-ponto_medio = [(bins[i] + bins[i+1]) / 2 for i in range(len(bins)-1)]
+# Pontos médios dos intervalos (para gráficos)
+pontos_medios = [(limites[i] + limites[i+1]) / 2 for i in range(len(limites) - 1)]
 
-# Exibir tabela de frequencias em formato de DataFrame do pandas
-# A tabela mostra o intervalo de classe, ponto medio, frequencia absoluta, relativa e acumulada
+# Mostra a tabela de frequências
 tabela = pd.DataFrame({
-    'Intervalo de Classe': [f'{int(bins[i])}-{int(bins[i+1])}' for i in range(len(bins)-1)],
-    'Ponto Médio': ponto_medio,
-    'Frequência Absoluta': frequencia_absoluta,
-    'Frequência Relativa': frequencia_relativa,
-    'Frequência Acumulada': frequencia_acumulada
+    "Intervalo": [f"{int(limites[i])}-{int(limites[i+1])}" for i in range(len(limites)-1)],
+    "Ponto Médio": pontos_medios,
+    "Freq. Abs.": frequencia_abs,
+    "Freq. Rel.": np.round(frequencia_rel, 2),
+    "Freq. Acum.": frequencia_acum
 })
 
-# Imprime a tabela de frequencias no console
 print(tabela)
 
-# Plotar o histograma
-plt.figure(figsize=(10, 6))  # Define o tamanho do gráfico
-plt.hist(velocidades, bins=intervalo_classes, edgecolor='black', rwidth=0.9)  # Plota o histograma
-plt.title('Histograma das Velocidades das Embarcações')  # Título do gráfico
-plt.xlabel('Velocidade (nós)')  # Rótulo do eixo X
-plt.ylabel('Frequência')  # Rótulo do eixo Y
-plt.xticks(np.arange(min(velocidades), max(velocidades) + 1, 1))  # Define as marcas do eixo X
-plt.grid(axis='y', linestyle='--', alpha=0.7)  # Adiciona uma grade pontilhada no eixo Y
+# Plota o histograma com pontos médios marcados
+plt.figure(figsize=(10, 6))
+plt.hist(velocidades, bins=intervalos, edgecolor='black', rwidth=0.9)
+plt.title("Histograma das Velocidades")
+plt.xlabel("Velocidade (nós)")
+plt.ylabel("Frequência")
 
-# Marcar pontos medios no histograma e desenhar linhas verticais até o eixo X
-for i in range(len(ponto_medio)):
-    # Exibe o valor do ponto médio acima de cada barra
-    plt.text(ponto_medio[i], frequencia_absoluta[i] + 0.5, str(round(ponto_medio[i], 1)), ha='center')
-    # Desenha linhas verticais no ponto médio descendo até o eixo X
-    plt.vlines(ponto_medio[i], 0, frequencia_absoluta[i], colors='red', linestyles='dashed')
+# Marcar os pontos médios no gráfico
+for i in range(len(pontos_medios)):
+    plt.text(pontos_medios[i], frequencia_abs[i] + 0.5,
+             str(round(pontos_medios[i], 1)), ha='center')
+    plt.vlines(pontos_medios[i], 0, frequencia_abs[i], colors='red', linestyles='dashed')
 
-# Salvando o grafico como imagem
-plt.savefig("grafico-histograma.png", format="png", dpi=300)
-
-# Exibe o grafico
+plt.tight_layout()
 plt.show()
