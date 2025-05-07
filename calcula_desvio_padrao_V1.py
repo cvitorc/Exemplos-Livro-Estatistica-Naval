@@ -13,8 +13,8 @@ if len(valores) > 0:
     for valor in valores:
         soma_dos_quadrados += (valor - media) ** 2
 
-    # Calcula a variância
-    variancia = soma_dos_quadrados / len(valores)
+    # Calcula a variância alteracao do valor considerando formula amostral
+    variancia = soma_dos_quadrados / (len(valores)-1)
 
     # Calcula o desvio padrão (raiz quadrada da variância)
     desvio_padrao = math.sqrt(variancia)
